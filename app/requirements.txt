@@ -1,3 +1,6 @@
 fastapi
 uvicorn
 sqlalchemy
+jinja2
+starlette
+aiofiles
