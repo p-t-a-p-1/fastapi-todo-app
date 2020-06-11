@@ -9,14 +9,25 @@ app = FastAPI(
     version='0.9 beta'
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount('/static', StaticFiles(directory='static'), name='static')
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory='templates')
 
-@app.get("/")
+@app.get('/')
 def index(request: Request):
-    return templates.TemplateResponse('index.html', {'request': request})
+    return templates.TemplateResponse(
+        'index.html',
+        {
+            'request': request
+        }
+    )
 
-@app.get("/items/{id}")
-async def read_item(request: Request, id: str):
-    return templates.TemplateResponse("item.html", {"request": request, "id": id})
+@app.get('/admin')
+def admin(request: Request):
+    return templates.TemplateResponse(
+        'admin.html',
+        {
+            'request': request,
+            'username': 'admin'
+        }
+    )
