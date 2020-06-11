@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>TODO App FastAPI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://use.fontawesome.com/releases/v5.3.1/js/all.js" defer ></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css" />
+  </head>
+  <body>
+    <main>
+        <section class="section">
+        {% block content %}
+        {% endblock %}
+        </section>
+    </main>
+    <footer>
+        <div align="center">
+            <p>Copyright &copy; RightCode Inc. All right reserves.</p>
+            <p>Powered by FastAPI 0.36.0 &amp; starlette 0.12.9</p>
+        </div>
+    </footer>
+  </body>
+</html>
