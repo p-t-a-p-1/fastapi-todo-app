@@ -1,7 +1,36 @@
 version: "3"
 
 services:
+  db:
+    build: db/
+    ports:
+      - 3306:3306
+    tty: true
+    environment:
+      MYSQL_DATABASE: sample_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./db/initdb.d:/docker-entrypoint-initdb.d
+      - ./db/conf.d:/etc/mysql/conf.d
+      - ./log/mysql:/var/log/mysql
+    networks:
+      - local-net
+
   app:
     build: app/
     ports:
       - 8000:8000
+    # dbサービスが起動後に起動
+    links:
+      - db
+    volumes:
+      - ./code:/usr/src/server
+    networks:
+      - local-net
+
+# コンテナ間で通信を行う
+networks:
+  local-net:
+    driver: bridge
