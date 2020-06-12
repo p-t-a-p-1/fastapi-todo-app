@@ -1,5 +1,6 @@
 version: "3"
-
+volumes:
+    db-volume:
 services:
   db:
     build: db/
@@ -8,10 +9,11 @@ services:
     tty: true
     environment:
       MYSQL_DATABASE: sample_db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: root
+      MYSQL_USER: root
+      MYSQL_PASSWORD:
       MYSQL_ROOT_PASSWORD: root
     volumes:
+      - db-volume:/var/lib/mysql:delegated
       - ./db/initdb.d:/docker-entrypoint-initdb.d
       - ./db/conf.d:/etc/mysql/conf.d
       - ./log/mysql:/var/log/mysql
