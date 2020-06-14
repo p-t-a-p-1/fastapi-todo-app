@@ -1,12 +1,20 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+
 from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
-from typing import List
+from starlette.status import HTTP_401_UNAUTHORIZED
 from starlette.middleware.cors import CORSMiddleware
-from db import session
+
+from typing import List
+
+import db
 from models import UserTable, TaskTable
 
+import hashlib
+
+security = HTTPBasic()
 
 app = FastAPI(
     title='FastAPIで作成するTODOアプリ',
@@ -38,18 +46,30 @@ def index(request: Request):
 
 
 @app.get('/admin')
-def admin(request: Request):
-    # ユーザーとタスクを取得
-    users = session.query(UserTable).all()
-    tasks = session.query(TaskTable).all()
-    session.close()
+def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
+    # Basic認証で受け取った情報
+    username = credentials.username
+    password = hashlib.md5(credentials.password.encode()).hexdigest()
+
+    # DBからユーザー名が一致する情報を取得
+    user = db.session.query(UserTable).filter(UserTable.username == username).first()
+    tasks = db.session.query(TaskTable).filter(TaskTable.user_id == user.id).all() if user is not None else []
+    db.session.close()
+
+    # 該当ユーザーがいない場合
+    if user is None or user.password != password:
+        error = 'ユーザー名かパスワードが間違っています'
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED,
+            detail=error,
+            headers={"WWW-Authenticate": "Basic"},
+        )
 
     return templates.TemplateResponse(
         'admin.html',
         {
             'request': request,
-            'username': 'admin',
-            'users': users,
+            'user': user,
             'tasks': tasks,
         }
     )
@@ -57,5 +77,13 @@ def admin(request: Request):
 
 @app.get('/users')
 def read_users():
-    users = session.query(UserTable).all()
+    users = db.session.query(UserTable).all()
+    db.session.close()
     return users
+
+
+@app.get('/tasks')
+def read_tasks():
+    tasks = db.session.query(TaskTable).all()
+    db.session.close()
+    return tasks
