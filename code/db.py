@@ -4,8 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
 # 接続情報
-user_name = "root"
-password = ""
+user_name = "user"
+password = "password"
 host = "db"
 database_name = "sample_db"
 
