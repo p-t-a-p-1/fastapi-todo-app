@@ -39,11 +39,18 @@ def index(request: Request):
 
 @app.get('/admin')
 def admin(request: Request):
+    # ユーザーとタスクを取得
+    users = session.query(UserTable).all()
+    tasks = session.query(TaskTable).all()
+    session.close()
+
     return templates.TemplateResponse(
         'admin.html',
         {
             'request': request,
-            'username': 'admin'
+            'username': 'admin',
+            'users': users,
+            'tasks': tasks,
         }
     )
 
