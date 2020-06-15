@@ -12,7 +12,10 @@ from typing import List
 import db
 from models import UserTable, TaskTable
 
+# passwordで使用
 import hashlib
+# 正規表現
+import re
 
 security = HTTPBasic()
 
@@ -34,7 +37,15 @@ app.mount('/static', StaticFiles(directory='static'), name='static')
 
 templates = Jinja2Templates(directory='templates')
 
+# 任意の4〜20の英数字
+pattern = re.compile(r'\w{4,20}')
+# 任意の6〜20の英数字
+pattern_pw = re.compile(r'\w{6,20}')
+# emailの正規表現
+pattern_mail = re.compile(r'^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$')
 
+
+# トップ表示
 @app.get('/')
 def index(request: Request):
     return templates.TemplateResponse(
@@ -45,6 +56,7 @@ def index(request: Request):
     )
 
 
+# 管理者ページ表示
 @app.get('/admin')
 def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
     # Basic認証で受け取った情報
@@ -75,6 +87,7 @@ def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security
     )
 
 
+# 全ユーザー一覧
 @app.get('/users')
 def read_users():
     users = db.session.query(UserTable).all()
@@ -82,6 +95,7 @@ def read_users():
     return users
 
 
+# 全タスク一覧
 @app.get('/tasks')
 def read_tasks():
     tasks = db.session.query(TaskTable).all()
@@ -89,6 +103,7 @@ def read_tasks():
     return tasks
 
 
+# 登録ページ表示
 @app.get('/register')
 def read_register(request: Request):
     return templates.TemplateResponse(
@@ -101,6 +116,54 @@ def read_register(request: Request):
     )
 
 
+# 登録処理
 @app.post('/register')
-def create_register(request: Request):
-    pass
+async def create_register(request: Request):
+    # POSTされた情報取得
+    data = await request.form()
+    username = data.get('username')
+    password = data.get('password')
+    password_tmp = data.get('password_tmp')
+    mail = data.get('mail')
+
+    error = []
+
+    # UserTableから登録しようとしてるユーザーがないか
+    tmp_user = db.session.query(UserTable).filter(UserTable.username == username).first()
+
+    # 登録に関するバリデーション
+    if tmp_user is not None:
+        error.append('同じユーザ名のユーザが存在します')
+    if password != password_tmp:
+        error.append('入力したパスワードが一致しません')
+    if pattern.match(username) is None:
+        error.append('ユーザ名は4〜20文字の半角英数字にしてください')
+    if pattern_pw.match(password) is None:
+        error.append('パスワードは6〜20文字の半角英数字にしてください')
+    if pattern_mail.match(mail) is None:
+        error.append('正しくメールアドレスを入力してください')
+
+    # エラー含めviewに渡す
+    if error:
+        return templates.TemplateResponse(
+            'register.html',
+            {
+                'request': request,
+                'username': username,
+                'error': error
+            }
+        )
+
+    # 問題ない場合はUserTableに登録
+    user = UserTable(username, password, mail)
+    db.session.add(user)
+    db.session.commit()
+    db.session.close()
+
+    return templates.TemplateResponse(
+        'complete.html',
+        {
+            'request': request,
+            'username': username
+        }
+    )

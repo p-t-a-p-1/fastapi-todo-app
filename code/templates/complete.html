@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="columns">
+    <div class="column is-three-quarters">
+        <h1 class="is-size-2">Complete your registration!</h1>
+    </div>
+    <div class="column has-text-right">
+        <a href="/" class="button is-primary">トップページへ</a>
+    </div>
+</div>
+
+
+<p>{{ username }}さん。TODOアプリケーションへようこそ</p>
+<p>早速ログインしてみましょう!</p>
+
+<a href="/admin" class="button is-primary">ログイン</a>
+{% endblock %}
