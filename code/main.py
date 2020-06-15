@@ -87,3 +87,20 @@ def read_tasks():
     tasks = db.session.query(TaskTable).all()
     db.session.close()
     return tasks
+
+
+@app.get('/register')
+def read_register(request: Request):
+    return templates.TemplateResponse(
+        'register.html',
+        {
+            'request': request,
+            'username': '',
+            'error': []
+        }
+    )
+
+
+@app.post('/register')
+def create_register(request: Request):
+    pass
