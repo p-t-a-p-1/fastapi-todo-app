@@ -1,0 +1,84 @@
+import calendar
+from datetime import datetime
+
+
+class MyCalendar(calendar.LocaleHTMLCalendar):
+    """
+    元々のカレンダークラスを継承してカスタマイズ
+
+    Args:
+        username (str): ユーザ名
+        linked_date (dict): 予定
+    """
+
+    def __init__(self, username, linked_date: dict):
+        calendar.LocaleHTMLCalendar.__init__(self, firstweekday=6, locale='ja-jp')
+
+        # 何か予定がある場合はリンクする
+        self.username = username
+        # dict{'datetime': done}
+        self.linked_date = linked_date
+
+    def formatmonth(self, theyear, themonth, withyear=True):
+        """
+        親クラスだと「年テーブルの中に月テーブル」になっているので月ごとのテーブルに枠をつけるよう上書き
+        """
+
+        v = []
+        a = v.append
+
+        a('<table class="table table-bordered table-sm" style="table-layout: fixed;">')
+        a('\n')
+        a(self.formatmonthname(theyear, themonth, withyear))
+        a('\n')
+        a(self.formatweekheader())
+        a('\n')
+        for week in self.monthdays2calendar(theyear, themonth):
+            a(self.formatweek(week, theyear, themonth))
+            a('\n')
+        a('</table><br>')
+        a('\n')
+        return ''.join(v)
+
+    def formatweek(self, theweek, theyear, themonth):
+        """
+        週メソッドも上書き
+        """
+
+        s = ''.join(self.formatday(d, wd, theyear, themonth)) for (d, wd) in theweek)
+        return '<tr>%s</tr>' % s
+
+    def formatday(self, day, weekday, theyear, themonth):
+        """
+        オーバーライド
+        引数で year と month を渡すようにした
+        """
+
+        if day == 0:
+            return '<td styele="background-color: #eee">&ndsp</td>'
+        else:
+            html = '<td class="text-center {highlight}"><a href="{url}" style="color:{text}">{day}</a></td>'
+            text = 'blue'
+            highlight = ''
+            # 予定がある場合は強調させる
+            date = datetime(year=theyear, month=themonth, day=day)
+            date_str = date.strtime('%Y%m%d')
+            if date_str in self.linked_date:
+                # 終了した予定
+                if self.linked_date[date_str]:
+                    highlight = 'bg-success'
+                    text = 'white'
+                # 過去の予定
+                elif date < datetime.now():
+                    highlight = 'bg-secondary'
+                    text = 'white'
+                # これからの予定
+                else:
+                    highlight = 'bg-warning'
+            # 変数展開
+            return html.format(
+                url='/todo/{}/{}/{}/{}'.format(self.username, theyear, themonth, day),
+                text=text,
+                day=day,
+                highlight=highlight
+            )
