@@ -17,6 +17,11 @@ import hashlib
 # 正規表現
 import re
 
+# カレンダー
+from mycalendar import MyCalendar
+from datetime import datetime
+from datetime import timedelta
+
 security = HTTPBasic()
 
 app = FastAPI(
@@ -63,6 +68,10 @@ def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security
     username = credentials.username
     password = hashlib.md5(credentials.password.encode()).hexdigest()
 
+    today = datetime.now()
+    # 1週間後の日付
+    next_w = today + timedelta(days=7)
+
     # DBからユーザー名が一致する情報を取得
     user = db.session.query(UserTable).filter(UserTable.username == username).first()
     tasks = db.session.query(TaskTable).filter(TaskTable.user_id == user.id).all() if user is not None else []
@@ -77,12 +86,30 @@ def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security
             headers={"WWW-Authenticate": "Basic"},
         )
 
+    # カレンダーをHTML形式で取得
+    # 予定がある日付をdictのキーとして渡す
+    cal = MyCalendar(
+        username,
+        {
+            t.deadline.strftime('%Y%m%d'): t.done for t in tasks
+        }
+    )
+    # カレンダーをHTMLで取得
+    cal = cal.formatyear(today.year, 4)
+
+    # 直近のタスク（1週間）だけリストを書き換える
+    tasks = [t for t in tasks if today <= t.deadline <= next_w]
+    # 直近の予定リンク
+    links = [t.deadline.strftime('/todo/' + username + '/%Y/%m/%d') for t in tasks]
+
     return templates.TemplateResponse(
         'admin.html',
         {
             'request': request,
             'user': user,
             'tasks': tasks,
+            'links': links,
+            'calendar': cal
         }
     )
 

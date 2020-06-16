@@ -1,7 +1,55 @@
 {% extends "layout.html" %}
 {% block content %}
 <h2 class="is-size-3">Administrator page</h2>
-<p>Hi, {{ username }}</p>
+<p>Hi, {{ user['username'] }}</p>
 
+<p><a href="/">戻る</a></p>
+
+<div>
+    <h3 class="is-size-4"> - 直近の予定 - </h3>
+    <table class="table">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>内容</th>
+                <th>締め切り</th>
+                <th>掲載日</th>
+                <th>終了</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task['id'] }}</td>
+                <td><a href="{{links[loop.index-1]}}">{{ task['content'] }}</a></td>
+                <td>{{ task['deadline'] }}</td>
+                <td>{{ task['date'] }}</td>
+                <td>{% if task['done'] %}
+                    <div class="text-success">済</div>
+                    {% else %}
+                    <div class="text-danger">未</div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+
+    <h3 class="is-size-4"> - カレンダー - </h3>
+    <p>
+        <span class="text-warning">■</span> ... 予定があります。&nbsp;
+        <span class="text-secondary">■</span> ... 過去の予定。 &nbsp;
+        <span class="text-success">■</span> ... 終了した予定。</p>
+    </p>
+    <br>
+    <p>↓ 日付をクリックして予定を追加・確認などができます。</p>
+    {% autoescape false%}
+    {{ calendar }}
+    {% endautoescape%}
+    <br>
+
+</div>
 
 {% endblock %}

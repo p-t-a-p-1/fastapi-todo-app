@@ -27,7 +27,7 @@ class MyCalendar(calendar.LocaleHTMLCalendar):
         v = []
         a = v.append
 
-        a('<table class="table table-bordered table-sm" style="table-layout: fixed;">')
+        a('<table class="table is-bordered">')
         a('\n')
         a(self.formatmonthname(theyear, themonth, withyear))
         a('\n')
@@ -45,7 +45,7 @@ class MyCalendar(calendar.LocaleHTMLCalendar):
         週メソッドも上書き
         """
 
-        s = ''.join(self.formatday(d, wd, theyear, themonth)) for (d, wd) in theweek)
+        s = ''.join(self.formatday(d, wd, theyear, themonth) for (d, wd) in theweek)
         return '<tr>%s</tr>' % s
 
     def formatday(self, day, weekday, theyear, themonth):
@@ -55,26 +55,26 @@ class MyCalendar(calendar.LocaleHTMLCalendar):
         """
 
         if day == 0:
-            return '<td styele="background-color: #eee">&ndsp</td>'
+            return '<td style="background-color: #eee"> </td>'
         else:
-            html = '<td class="text-center {highlight}"><a href="{url}" style="color:{text}">{day}</a></td>'
+            html = '<td class="text-center {highlight}"><a href="{url}" class="{text}">{day}</a></td>'
             text = 'blue'
             highlight = ''
             # 予定がある場合は強調させる
             date = datetime(year=theyear, month=themonth, day=day)
-            date_str = date.strtime('%Y%m%d')
+            date_str = date.strftime('%Y%m%d')
             if date_str in self.linked_date:
                 # 終了した予定
                 if self.linked_date[date_str]:
-                    highlight = 'bg-success'
-                    text = 'white'
+                    highlight = 'has-background-success'
+                    text = 'has-text-white'
                 # 過去の予定
                 elif date < datetime.now():
-                    highlight = 'bg-secondary'
-                    text = 'white'
+                    highlight = 'has-background-grey'
+                    text = 'has-text-white'
                 # これからの予定
                 else:
-                    highlight = 'bg-warning'
+                    highlight = 'has-background-warning'
             # 変数展開
             return html.format(
                 url='/todo/{}/{}/{}/{}'.format(self.username, theyear, themonth, day),
