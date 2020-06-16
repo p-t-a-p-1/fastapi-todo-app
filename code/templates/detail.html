@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="columns">
+    <div class="column">
+        <h1 class="is-size-2">{{ year }}年{{ month }}月{{ day }}日の予定</h1>
+    </div>
+    <div class="column">
+        <a href="/" class="button">戻る</a>
+    </div>
+</div>
+
+<p>{{ username }}さん、予定を確認・登録・終了してください</p>
+
+{% endblock %}

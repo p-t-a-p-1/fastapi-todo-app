@@ -194,3 +194,27 @@ async def create_register(request: Request):
             'username': username
         }
     )
+
+
+# 予定詳細ページ
+@app.get('/todo/{username}/{year}/{month}/{day}')
+def read_detail(request: Request, username, year, month, day):
+    """
+    URLのパターンは引数で取得できる
+    Args:
+        request (Request): URLでのリクエスト
+        username (str): ユーザ名
+        year (int): 年
+        month (int): 月
+        day (int): 日
+    """
+    return templates.TemplateResponse(
+        'detail.html',
+        {
+            'request': request,
+            'username': username,
+            'year': year,
+            'month': month,
+            'day': day
+        }
+    )
