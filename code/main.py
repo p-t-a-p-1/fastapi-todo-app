@@ -6,6 +6,7 @@ from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 from starlette.status import HTTP_401_UNAUTHORIZED
 from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import RedirectResponse
 
 from typing import List
 
@@ -21,6 +22,9 @@ import re
 from mycalendar import MyCalendar
 from datetime import datetime
 from datetime import timedelta
+
+# Basic認証
+from auth import basic_auth
 
 security = HTTPBasic()
 
@@ -65,8 +69,7 @@ def index(request: Request):
 @app.get('/admin')
 def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
     # Basic認証で受け取った情報
-    username = credentials.username
-    password = hashlib.md5(credentials.password.encode()).hexdigest()
+    username = basic_auth(credentials)
 
     today = datetime.now()
     # 1週間後の日付
@@ -76,15 +79,6 @@ def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security
     user = db.session.query(UserTable).filter(UserTable.username == username).first()
     tasks = db.session.query(TaskTable).filter(TaskTable.user_id == user.id).all() if user is not None else []
     db.session.close()
-
-    # 該当ユーザーがいない場合
-    if user is None or user.password != password:
-        error = 'ユーザー名かパスワードが間違っています'
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED,
-            detail=error,
-            headers={"WWW-Authenticate": "Basic"},
-        )
 
     # カレンダーをHTML形式で取得
     # 予定がある日付をdictのキーとして渡す
@@ -198,7 +192,7 @@ async def create_register(request: Request):
 
 # 予定詳細ページ
 @app.get('/todo/{username}/{year}/{month}/{day}')
-def read_detail(request: Request, username, year, month, day):
+def read_detail(request: Request, username, year, month, day, credentials: HTTPBasicCredentials = Depends(security)):
     """
     URLのパターンは引数で取得できる
     Args:
@@ -208,6 +202,14 @@ def read_detail(request: Request, username, year, month, day):
         month (int): 月
         day (int): 日
     """
+
+    # 認証okか
+    username_tmp = basic_auth(credentials)
+
+    # 他のユーザが来た場合は弾く
+    if username_tmp != username:
+        return RedirectResponse('/')
+
     return templates.TemplateResponse(
         'detail.html',
         {
