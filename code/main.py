@@ -154,11 +154,11 @@ async def create_register(request: Request):
 
     # 登録に関するバリデーション
     if tmp_user is not None:
-        error.append('同じユーザ名のユーザが存在します')
+        error.append('同じユーザー名のユーザーが存在します')
     if password != password_tmp:
         error.append('入力したパスワードが一致しません')
     if pattern.match(username) is None:
-        error.append('ユーザ名は4〜20文字の半角英数字にしてください')
+        error.append('ユーザー名は4〜20文字の半角英数字にしてください')
     if pattern_pw.match(password) is None:
         error.append('パスワードは6〜20文字の半角英数字にしてください')
     if pattern_mail.match(mail) is None:
@@ -197,7 +197,7 @@ def read_detail(request: Request, username, year, month, day, credentials: HTTPB
     URLのパターンは引数で取得できる
     Args:
         request (Request): URLでのリクエスト
-        username (str): ユーザ名
+        username (str): ユーザー名
         year (int): 年
         month (int): 月
         day (int): 日
@@ -206,20 +206,20 @@ def read_detail(request: Request, username, year, month, day, credentials: HTTPB
     # 認証okか
     username_tmp = basic_auth(credentials)
 
-    # 他のユーザが来た場合は弾く
+    # 他のユーザーが来た場合は弾く
     if username_tmp != username:
         return RedirectResponse('/')
 
-    # ログインユーザ
+    # ログインユーザー
     user = db.session.query(UserTable).filter(UserTable.username == username).first()
-    # ログインユーザの全タスクを取得
-    user_all_task = db.session.query(TaskTable).filter(TaskTable.user_id == user.id).all()
+    # ログインユーザーの全タスクを取得
+    user_all_tasks = db.session.query(TaskTable).filter(TaskTable.user_id == user.id).all()
     db.session.close()
 
     # 該当の日付と一致するものだけリストにする
     # 月と日は０埋め
     theday = '{}{}{}'.format(year, month.zfill(2), day.zfill(2))
-    tasks = [t for t in user_all_task if t.deadline.strftime('%Y%m%d') == theday]
+    tasks = [t for t in user_all_tasks if t.deadline.strftime('%Y%m%d') == theday]
 
     return templates.TemplateResponse(
         'detail.html',
@@ -232,3 +232,33 @@ def read_detail(request: Request, username, year, month, day, credentials: HTTPB
             'day': day
         }
     )
+
+
+# 終了したことをPOST
+@app.post('/done')
+async def done(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
+    # 認証
+    username = basic_auth(credentials)
+
+    # ユーザー情報
+    user = db.session.query(UserTable).filter(UserTable.username == username).first()
+
+    # ログインユーザーのタスクを取得
+    user_all_tasks = db.session.query(TaskTable).filter(TaskTable.user_id == user.id).all()
+
+    # フォームで受け取ったタスクの終了判定を見て内容を変更する
+    data = await request.form()
+    # リストとして取得
+    t_dones = data.getlist('done[]')
+
+    for task in user_all_tasks:
+        if str(task.id) in t_dones:
+            task.done = True
+        print(task)
+
+    # update
+    db.session.commit()
+    db.session.close()
+
+    # 管理者トップへリダイレクト
+    return RedirectResponse('/admin')

@@ -6,7 +6,7 @@
         <h1 class="is-size-2">{{ year }}年{{ month }}月{{ day }}日の予定</h1>
     </div>
     <div class="column">
-        <a href="/" class="button">戻る</a>
+        <a href="/" class="button is-primary">戻る</a>
     </div>
 </div>
 
@@ -14,7 +14,7 @@
 
 <h3 class="is-size-4">予定一覧</h3>
 <p>予定を終了した場合はチェックボックスにチェックをしてください</p>
-<form action="/done" method="POST">
+<form action="/done" method="post">
     <table class="table">
         <thead class="has-background-grey">
             <tr>
@@ -42,9 +42,9 @@
     </table>
     <br>
     {% if tasks | length != 0 %}
-    <button type="submit" class="button button-success">更新する</button>
+    <button type="submit" class="button is-primary">更新する</button>
     {% else %}
-    <button type="submit" class="button button-success" disabled="disabled">更新する</button>
+    <button type="submit" class="button is-primary" disabled="disabled">更新する</button>
     {% endif %}
 </form>
 {% endblock %}

@@ -58,7 +58,7 @@ class TaskTable(Base):
         primary_key=True,
         autoincrement=True,
     )
-    user_id = Column('user_id', ForeignKey('user_id'))
+    user_id = Column('user_id', ForeignKey('user.id'))
     content = Column('content', String(256))
     deadline = Column(
         'deadline',
