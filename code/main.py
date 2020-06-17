@@ -1,12 +1,13 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.responses import RedirectResponse
 
 from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 from starlette.status import HTTP_401_UNAUTHORIZED
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import RedirectResponse
+# from starlette.responses import RedirectResponse
 
 from typing import List
 
@@ -67,6 +68,7 @@ def index(request: Request):
 
 # 管理者ページ表示
 @app.get('/admin')
+@app.post('/admin')
 def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
     # Basic認証で受け取った情報
     username = basic_auth(credentials)
