@@ -12,4 +12,39 @@
 
 <p>{{ username }}さん、予定を確認・登録・終了してください</p>
 
+<h3 class="is-size-4">予定一覧</h3>
+<p>予定を終了した場合はチェックボックスにチェックをしてください</p>
+<form action="/done" method="POST">
+    <table class="table">
+        <thead class="has-background-grey">
+            <tr>
+                <th>内容</th>
+                <th>締め切り</th>
+                <th>終了</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.content }}</td>
+                <td>{{ task.deadline }}</td>
+                <td>
+                    {% if task.done %}
+                    <span class="has-text-success">終了済</span>
+                    {% else %}
+                    <input type="checkbox" name="done[]" value="{{ task.id }}">
+                    <span class="has-text-danger">終了する</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    {% if tasks | length != 0 %}
+    <button type="submit" class="button button-success">更新する</button>
+    {% else %}
+    <button type="submit" class="button button-success" disabled="disabled">更新する</button>
+    {% endif %}
+</form>
 {% endblock %}

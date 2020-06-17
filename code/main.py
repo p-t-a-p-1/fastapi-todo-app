@@ -210,11 +210,23 @@ def read_detail(request: Request, username, year, month, day, credentials: HTTPB
     if username_tmp != username:
         return RedirectResponse('/')
 
+    # ログインユーザ
+    user = db.session.query(UserTable).filter(UserTable.username == username).first()
+    # ログインユーザの全タスクを取得
+    user_all_task = db.session.query(TaskTable).filter(TaskTable.user_id == user.id).all()
+    db.session.close()
+
+    # 該当の日付と一致するものだけリストにする
+    # 月と日は０埋め
+    theday = '{}{}{}'.format(year, month.zfill(2), day.zfill(2))
+    tasks = [t for t in user_all_task if t.deadline.strftime('%Y%m%d') == theday]
+
     return templates.TemplateResponse(
         'detail.html',
         {
             'request': request,
             'username': username,
+            'tasks': tasks,
             'year': year,
             'month': month,
             'day': day
