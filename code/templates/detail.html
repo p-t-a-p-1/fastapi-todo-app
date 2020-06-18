@@ -47,4 +47,33 @@
     <button type="submit" class="button is-primary" disabled="disabled">更新する</button>
     {% endif %}
 </form>
+
+<hr>
+
+<h3 class="is-size-4">予定の追加</h3>
+<form action="/add" method="post">
+    <h5>内容</h5>
+    <p><input type="text" size="50" maxlength="200" name="content"></p>
+    <br>
+    <h5>締め切り時間</h5>
+    <p>
+        {{ year }}年{{ month }}月{{ day }}日
+        <select name="hour">
+            {% for h in range(25) %}
+            <option value="{{ h }}">{{ h }}</option>
+            {% endfor %}
+        </select>時
+        <select name="minute">
+            {% for m in range(61) %}
+            <option value="{{ m }}">{{ m }}</option>
+            {% endfor %}
+        </select>分
+    </p>
+    <br>
+    <input type="hidden" name="year" value="{{ year }}">
+    <input type="hidden" name="month" value="{{ month }}">
+    <input type="hidden" name="day" value="{{ day }}">
+    <button type="submit" class="button is-primary">予定を追加する</button>
+</form>
+
 {% endblock %}

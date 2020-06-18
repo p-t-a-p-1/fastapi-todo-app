@@ -264,3 +264,31 @@ async def done(request: Request, credentials: HTTPBasicCredentials = Depends(sec
 
     # 管理者トップへリダイレクト
     return RedirectResponse('/admin')
+
+
+# 予定追加
+@app.post('/add')
+async def add_task(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
+    # 認証
+    username = basic_auth(credentials)
+    # ユーザー情報を取得
+    user = db.session.query(UserTable).filter(UserTable.username == username).first()
+
+    # フォームからきたデータ取得
+    data = await request.form()
+    print(data)
+    year = int(data['year'])
+    month = int(data['month'])
+    day = int(data['day'])
+    hour = int(data['hour'])
+    minute = int(data['minute'])
+
+    deadline = datetime(year=year, month=month, day=day, hour=hour, minute=minute)
+
+    # 新しくタスクを作成しDBコミット
+    task = TaskTable(user.id, data['content'], deadline)
+    db.session.add(task)
+    db.session.commit()
+    db.session.close()
+
+    return RedirectResponse('/admin')
