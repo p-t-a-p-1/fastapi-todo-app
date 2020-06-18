@@ -75,6 +75,12 @@ class MyCalendar(calendar.LocaleHTMLCalendar):
                 # これからの予定
                 else:
                     highlight = 'has-background-warning'
+
+            # 今日の日付を強調
+            if date_str == datetime.today().strftime("%Y%m%d"):
+                highlight = 'is-capitalized has-background-primary'
+                text = 'has-text-white has-text-weight-bold'
+
             # 変数展開
             return html.format(
                 url='/todo/{}/{}/{}/{}'.format(self.username, theyear, themonth, day),
