@@ -21,6 +21,7 @@
                 <th>内容</th>
                 <th>締め切り</th>
                 <th>終了</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -35,6 +36,9 @@
                     <input type="checkbox" name="done[]" value="{{ task.id }}">
                     <span class="has-text-danger">終了する</span>
                     {% endif %}
+                </td>
+                <td>
+                    <a href="/delete/{{ task.id }}" class="button is-danger is-small">削除</a>
                 </td>
             </tr>
             {% endfor %}

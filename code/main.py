@@ -292,3 +292,25 @@ async def add_task(request: Request, credentials: HTTPBasicCredentials = Depends
     db.session.close()
 
     return RedirectResponse('/admin')
+
+
+# 予定の削除
+@app.get('/delete/{task_id}')
+def delete_task(request: Request, task_id, credentials: HTTPBasicCredentials = Depends(security)):
+    # 認証
+    username = basic_auth(credentials)
+    # ユーザー情報を取得
+    user = db.session.query(UserTable).filter(UserTable.username == username).first()
+    # 該当タスクを取得
+    task = db.session.query(TaskTable).filter(TaskTable.id == task_id).first()
+
+    # もしユーザーIDが異なれば削除せずリダイレクト
+    if task.user_id != user.id:
+        return RedirectResponse('/admin')
+
+    # 削除してDBコミット
+    db.session.delete(task)
+    db.session.commit()
+    db.session.close()
+
+    return RedirectResponse('/admin')
