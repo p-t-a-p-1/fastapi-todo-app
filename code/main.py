@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Form
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.responses import RedirectResponse
 
@@ -314,3 +314,58 @@ def delete_task(request: Request, task_id, credentials: HTTPBasicCredentials = D
     db.session.close()
 
     return RedirectResponse('/admin')
+
+
+@app.get('/get')
+def get(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
+    # 認証
+    username = basic_auth(credentials)
+
+    # ユーザー情報を取得
+    user = db.session.query(UserTable).filter(UserTable.username == username).first()
+    # タスクを取得
+    tasks = db.session.query(TaskTable).filter(TaskTable.user_id == user.id).all()
+
+    db.session.close()
+
+    tasks = [{
+        'id': task.id,
+        'content': task.content,
+        'deadline': task.deadline.strftime('%Y-%m-%d %H:%M:%S'),
+        'publishd': task.date.strftime('%Y-%m-%d %H:%M:%S'),
+        'done': task.done,
+    } for task in tasks]
+
+    return tasks
+
+
+# タスク追加API
+@app.post('/add_task')
+async def insert_task(request: Request, content: str = Form(...), deadline: str = Form(...), credentials: HTTPBasicCredentials = Depends(security)):
+    """
+    タスクを追加してJsonで追加したタスク情報を返す
+    deadlineは %Y-%m-%d_%H:%M:%S (e.g. 2020-06-18_12:30:00)
+    """
+    # 認証
+    username = basic_auth(credentials)
+    # ユーザー情報を取得
+    user = db.session.query(UserTable).filter(UserTable.username == username).first()
+
+    # タスクを追加
+    task = TaskTable(user.id, content, datetime.strptime(deadline, '%Y-%m-%d_%H:%M:%S'))
+
+    db.session.add(task)
+    db.session.commit()
+
+    # 新しく追加したタスクを取得
+    new_task = db.session.query(TaskTable).all()[-1]
+    db.session.close()
+
+    # 新規タスクをJsonで返す
+    return {
+        'id': new_task.id,
+        'content': new_task.content,
+        'deadline': new_task.deadline.strftime('%Y-%m-%d_%H:%M:%S'),
+        'published': new_task.date.strftime('%Y-%m-%d_%H:%M:%S'),
+        'done': new_task.done,
+    }
