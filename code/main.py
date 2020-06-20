@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Form
+from fastapi import FastAPI, Depends, HTTPException, Form, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.responses import RedirectResponse
 
@@ -70,6 +70,7 @@ def index(request: Request):
 @app.get('/admin')
 @app.post('/admin')
 def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security)):
+
     # Basic認証で受け取った情報
     username = basic_auth(credentials)
 
@@ -93,8 +94,8 @@ def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security
     # カレンダーをHTMLで取得
     cal = cal.formatyear(today.year, 4)
 
-    # 直近のタスク（1週間）だけリストを書き換える
-    tasks = [t for t in tasks if today <= t.deadline <= next_w]
+    # 直近のタスクのリスト
+    tasks = [task for task in tasks if today <= task.deadline]
     # 直近の予定リンク
     links = [t.deadline.strftime('/todo/' + username + '/%Y/%m/%d') for t in tasks]
 
@@ -108,23 +109,6 @@ def admin(request: Request, credentials: HTTPBasicCredentials = Depends(security
             'calendar': cal
         }
     )
-
-
-# 全ユーザー一覧
-@app.get('/users')
-def read_users():
-    users = db.session.query(UserTable).all()
-    db.session.close()
-    return users
-
-
-# 全タスク一覧
-@app.get('/tasks')
-def read_tasks():
-    tasks = db.session.query(TaskTable).all()
-    db.session.close()
-    return tasks
-
 
 # 登録ページ表示
 @app.get('/register')
@@ -369,3 +353,9 @@ async def insert_task(request: Request, content: str = Form(...), deadline: str 
         'published': new_task.date.strftime('%Y-%m-%d_%H:%M:%S'),
         'done': new_task.done,
     }
+
+
+# ログアウト
+@app.get('/logout')
+def logout(request: Request):
+    return RedirectResponse('/', status_code=401)
