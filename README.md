@@ -8,6 +8,17 @@
 * Bulma - CSSフレームワーク
 * Docker(Docker-compose) - 環境整備
 
+## python使用パッケージ
+* fastapi フレームワーク
+* uvicorn サーバー
+* starlette サーバー
+* sqlalchemy DB操作のためのORM
+* jinja2 テンプレートエンジン
+* aiofiles ファイル操作
+* mysqlclient mysql関連
+* python-multipart 複数request
+* datetime 日付
+
 ## ローカル動作方法
 
 ```
